@@ -1,4 +1,5 @@
-name: Build and deploy to Azure App Service
+
+name: CI/CD to Azure Virtual Machine
 
 on:
   push:
@@ -11,23 +12,82 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # 1. GitHub repository-dən kodu götür
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      # 2. Node.js mühitini hazırla
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
+      # 3. Paketləri quraşdır
       - name: Install dependencies
         run: npm install
 
-      - name: Run basic validation
+      # 4. Kodu yoxla
+      - name: Test application
         run: npm test
 
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+      # 5. SSH bağlantısını hazırla
+      - name: Configure SSH
+        env:
+          VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          VM_KEY: ${{ secrets.AZURE_VM_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$VM_KEY" > ~/.ssh/azure_vm_key
+
+          chmod 600 ~/.ssh/azure_vm_key
+
+          ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
+
+      # 6. Azure VM-ə SSH ilə qoşul və qovluq yarat
+      - name: Prepare remote directory
+        env:
+          VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          VM_USER: ${{ secrets.AZURE_VM_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+            "$VM_USER@$VM_HOST" \
+            'mkdir -p ~/app'
+
+      # 7. Layihə fayllarını Azure VM-ə göndər
+      - name: Deploy application files
+        env:
+          VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          VM_USER: ${{ secrets.AZURE_VM_USERNAME }}
+        run: |
+          rsync -avz \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            -e "ssh -i ~/.ssh/azure_vm_key" \
+            ./ "$VM_USER@$VM_HOST:app/"
+
+      # 8. Paketləri quraşdır və servisi restart et
+      - name: Restart application
+        env:
+          VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          VM_USER: ${{ secrets.AZURE_VM_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+            "$VM_USER@$VM_HOST" \
+            'cd ~/app &&
+             npm install --omit=dev &&
+             sudo -n systemctl restart node-demo &&
+             sudo -n systemctl is-active node-demo'
+
+      # 9. Tətbiqin işlədiyini yoxla
+      - name: Verify deployment
+        env:
+          VM_HOST: ${{ secrets.AZURE_VM_HOST }}
+          VM_USER: ${{ secrets.AZURE_VM_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/azure_vm_key \
+            "$VM_USER@$VM_HOST" \
+            'curl -fsS http://127.0.0.1:8080/health'
