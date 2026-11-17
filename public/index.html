@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Actions → Azure</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: Arial, sans-serif; color: #f8fafc;
+      background: radial-gradient(circle at top right, #2563eb, transparent 38%),
+                  linear-gradient(135deg, #0f172a, #172554);
+      padding: 24px;
+    }
+    main {
+      width: min(720px, 100%); padding: 42px; border-radius: 24px;
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 24px 70px rgba(0,0,0,.28); text-align: center;
+    }
+    .pill { display: inline-block; padding: 8px 14px; border-radius: 30px;
+      background: rgba(34,197,94,.16); color: #86efac; font-size: 14px; }
+    h1 { font-size: clamp(32px, 6vw, 52px); margin: 22px 0 12px; }
+    p { color: #cbd5e1; line-height: 1.7; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
+    .step { padding: 18px 10px; background: rgba(255,255,255,.08); border-radius: 14px; }
+    .step strong { display: block; margin-bottom: 7px; }
+    .step small { color: #cbd5e1; }
+    footer { margin-top: 28px; color: #94a3b8; font-size: 13px; }
+    @media(max-width: 560px) { main { padding: 28px 18px; } .steps { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="pill">● Tətbiq işləyir</span>
+    <h1>Salam, Azure! 🚀</h1>
+    <p>Bu veb tətbiq GitHub Actions vasitəsilə avtomatik deploy edilir.</p>
+    <p>GitHub-a yeni kod göndərdikdə pipeline işə düşür və Azure App Service yenilənir.</p>
+    <section class="steps">
+      <div class="step"><strong>1. Git Push</strong><small>Kod GitHub-a göndərilir</small></div>
+      <div class="step"><strong>2. CI/CD</strong><small>Test və deploy başlayır</small></div>
+      <div class="step"><strong>3. Azure</strong><small>Sayt yenilənir</small></div>
+    </section>
+    <footer>Node.js · GitHub Actions · Microsoft Azure App Service</footer>
+  </main>
+</body>
+</html>

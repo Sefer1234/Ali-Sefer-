@@ -1,0 +1,13 @@
+{
+  "name": "github-actions-azure-demo",
+  "version": "1.0.0",
+  "description": "A tiny web app for GitHub Actions CI/CD deployment to Azure App Service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --check server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
